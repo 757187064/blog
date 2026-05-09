@@ -1,0 +1,47 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  updatedDate?: Date;
+  tags?: string[];
+  hero?: string;
+}
+
+const { title, description, pubDate, updatedDate, tags = [], hero } = Astro.props;
+
+const formatDate = (date: Date) =>
+  new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  }).format(date);
+---
+
+<BaseLayout title={`${title} | 博客`} description={description}>
+  <section class="reading-stage">
+    <div class="reading-bg" aria-hidden="true"></div>
+    <article class="post-shell glass-panel">
+      <header class="post-header">
+        <p class="eyebrow">Article</p>
+        <h1>{title}</h1>
+        <p class="post-description">{description}</p>
+        <div class="post-meta">
+          <span>发布于 {formatDate(pubDate)}</span>
+          {updatedDate && <span>更新于 {formatDate(updatedDate)}</span>}
+        </div>
+        {tags.length > 0 && (
+          <ul class="tag-list" aria-label="文章标签">
+            {tags.map((tag) => <li>{tag}</li>)}
+          </ul>
+        )}
+        {hero && <img class="post-hero" src={hero} alt="" />}
+      </header>
+      <div class="post-content">
+        <slot />
+      </div>
+    </article>
+  </section>
+</BaseLayout>

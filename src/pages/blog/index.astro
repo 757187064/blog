@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PostCard from "../../components/PostCard.astro";
+import { getPublishedPosts } from "../../lib/blog";
+
+const posts = await getPublishedPosts();
+---
+
+<BaseLayout title="文章 | 博客" description="博客文章列表">
+  <section class="reading-stage archive-stage">
+    <div class="reading-bg" aria-hidden="true"></div>
+    <div class="list-page glass-panel">
+      <div class="section-heading">
+        <p class="eyebrow">Archive</p>
+        <h1>文章</h1>
+        <p>这里是所有已经发布的内容，主要记录学习、生活和兴趣里的小发现。</p>
+      </div>
+      <div class="post-list">
+        {posts.map((post) => <PostCard post={post} />)}
+      </div>
+    </div>
+  </section>
+</BaseLayout>

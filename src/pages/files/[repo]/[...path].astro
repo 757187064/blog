@@ -1,0 +1,87 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import {
+  countRepositoryFiles,
+  getRepository,
+  getRepositoryItems,
+  type RepositoryItem,
+  repositories
+} from "../../../lib/fileStore";
+
+export function getStaticPaths() {
+  const paths = [];
+
+  for (const repository of repositories) {
+    paths.push({ params: { repo: repository.slug, path: undefined } });
+    const stack = [""];
+
+    while (stack.length > 0) {
+      const current = stack.pop() || "";
+      for (const item of getRepositoryItems(repository, current)) {
+        if (item.type === "directory") {
+          stack.push(item.path);
+          paths.push({
+            params: { repo: repository.slug, path: item.path }
+          });
+        }
+      }
+    }
+  }
+
+  return paths;
+}
+
+const repoSlug = Astro.params.repo || "";
+const currentPath = Astro.params.path || "";
+const repository = getRepository(repoSlug);
+
+if (!repository) {
+  return Astro.redirect("/");
+}
+
+const items = getRepositoryItems(repository, currentPath);
+const stats = countRepositoryFiles(repository);
+const pathParts: string[] = currentPath ? currentPath.split("/") : [];
+---
+
+<BaseLayout title={`${repository.title} | 项目文件存储`} description={repository.description}>
+  <section class="reading-stage archive-stage">
+    <div class="reading-bg" aria-hidden="true"></div>
+    <div class="repo-shell glass-panel">
+      <header class="repo-header">
+        <p class="eyebrow">{repository.category}</p>
+        <h1>{repository.title}</h1>
+        <p>{repository.description}</p>
+        <div class="repo-stats">
+          <span>{stats.directories} 个文件夹</span>
+          <span>{stats.files} 个文件</span>
+        </div>
+      </header>
+
+      <nav class="repo-breadcrumb" aria-label="当前路径">
+        <a href={`/files/${repository.slug}/`}>{repository.title}</a>
+        {pathParts.map((part: string, index: number) => {
+          const href = `/files/${repository.slug}/${pathParts.slice(0, index + 1).map(encodeURIComponent).join("/")}/`;
+          return <a href={href}>{part}</a>;
+        })}
+      </nav>
+
+      <div class="repo-table">
+        {currentPath && (
+          <a class="repo-row" href={`/files/${repository.slug}/${pathParts.slice(0, -1).map(encodeURIComponent).join("/")}`}>
+            <span class="repo-icon">↩</span>
+            <strong>返回上一级</strong>
+            <span></span>
+          </a>
+        )}
+        {items.map((item: RepositoryItem) => (
+          <a class="repo-row" href={item.href} target={item.type === "file" ? "_blank" : undefined}>
+            <span class="repo-icon">{item.type === "directory" ? "📁" : "📄"}</span>
+            <strong>{item.name}</strong>
+            <span>{item.type === "directory" ? "folder" : item.size}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jupyter → Python 转换器</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{
+  --bg:#fff;--bg2:#f8f9fa;--bg3:#e9ecef;--border:#dee2e6;
+  --txt:#212529;--txt2:#495057;--txt3:#6c757d;
+  --blue:#2563eb;--green:#059669;--red:#dc2626;
+}
+.dark{
+  --bg:#111827;--bg2:#1f2937;--bg3:#374151;--border:#4b5563;
+  --txt:#f9fafb;--txt2:#d1d5db;--txt3:#9ca3af;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;transition:background .3s,color .3s}
+
+/* 顶部 */
+.header{
+  text-align:center;padding:2.5rem 1.5rem 1.5rem;
+  border-bottom:1px solid var(--border);
+}
+.header h1{font-size:1.75rem;font-weight:700;margin-bottom:.5rem}
+.header p{color:var(--txt3);font-size:.95rem}
+.header .theme-btn{
+  position:absolute;top:1rem;right:1.5rem;
+  background:var(--bg2);border:1px solid var(--border);border-radius:6px;
+  padding:.4rem .75rem;cursor:pointer;font-size:.85rem;color:var(--txt);
+  transition:.15s;
+}
+.header .theme-btn:hover{background:var(--bg3)}
+
+/* 主容器 */
+.container{max-width:900px;margin:0 auto;padding:1.5rem}
+
+/* 拖拽区域 */
+.dropzone{
+  border:2px dashed var(--border);border-radius:12px;padding:3rem 2rem;
+  text-align:center;cursor:pointer;transition:.2s;
+  background:var(--bg2);margin-bottom:1.5rem;
+}
+.dropzone.dragover{border-color:var(--blue);background:rgba(37,99,235,.05)}
+.dropzone .icon{font-size:3rem;margin-bottom:1rem}
+.dropzone h3{font-size:1.15rem;margin-bottom:.5rem;color:var(--txt)}
+.dropzone p{color:var(--txt3);font-size:.88rem}
+.dropzone input[type=file]{display:none}
+
+/* 选项栏 */
+.options{
+  display:flex;gap:1rem;align-items:center;flex-wrap:wrap;margin-bottom:1.5rem;
+  padding:1rem;background:var(--bg2);border-radius:8px;border:1px solid var(--border);
+}
+.options label{display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--txt2);cursor:pointer}
+.options input[type=checkbox]{accent-color:var(--blue)}
+.options .btn{
+  padding:.45rem 1rem;background:var(--blue);color:#fff;border:none;
+  border-radius:6px;cursor:pointer;font-size:.85rem;transition:.15s;margin-left:auto;
+}
+.options .btn:hover{opacity:.9}
+.options .btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* 文件列表 */
+.file-list{margin-bottom:1.5rem}
+.file-item{
+  display:flex;align-items:center;gap:1rem;padding:.75rem 1rem;
+  background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:.5rem;
+  transition:.15s;
+}
+.file-item:hover{background:var(--bg3)}
+.file-item .name{flex:1;font-size:.9rem;font-weight:500;color:var(--txt);word-break:break-all}
+.file-item .size{font-size:.8rem;color:var(--txt3);white-space:nowrap}
+.file-item .status{font-size:.8rem;font-weight:500;white-space:nowrap}
+.file-item .status.ok{color:var(--green)}
+.file-item .status.err{color:var(--red)}
+.file-item .actions button{
+  padding:.3rem .65rem;border:1px solid var(--border);border-radius:4px;
+  background:var(--bg);color:var(--txt2);cursor:pointer;font-size:.75rem;transition:.15s;
+}
+.file-item .actions button:hover{background:var(--bg3)}
+
+/* 预览区 */
+.preview{
+  background:var(--bg2);border:1px solid var(--border);border-radius:8px;
+  overflow:hidden;margin-bottom:1.5rem;
+}
+.preview .head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:.65rem 1rem;background:var(--bg3);border-bottom:1px solid var(--border);
+  font-size:.82rem;color:var(--txt3);
+}
+.preview pre{
+  padding:1rem;max-height:400px;overflow:auto;font-family:'SF Mono',monospace;
+  font-size:.8rem;line-height:1.5;color:var(--txt);white-space:pre-wrap;
+  margin:0;
+}
+.preview .empty{text-align:center;padding:3rem;color:var(--txt3)}
+
+/* 统计 */
+.stats{
+  display:flex;gap:1.5rem;margin-bottom:1rem;flex-wrap:wrap;
+}
+.stat-card{
+  flex:1;min-width:140px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:8px;padding:1rem;text-align:center;
+}
+.stat-card .value{font-size:1.5rem;font-weight:700;color:var(--blue)}
+.stat-card .label{font-size:.78rem;color:var(--txt3);margin-top:.25rem}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📓 Jupyter → Python 转换器</h1>
+  <p>拖入 .ipynb 文件，一键转为 .py 源码，批量处理课件</p>
+  <button class="theme-btn" onclick="toggleTheme()">🌓</button>
+</div>
+
+<div class="container">
+
+  <!-- 拖拽区 -->
+  <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+    <div class="icon">📂</div>
+    <h3>拖拽 .ipynb 文件到这里</h3>
+    <p>或点击此处选择文件（支持多选）</p>
+    <input type="file" id="fileInput" accept=".ipynb" multiple>
+  </div>
+
+  <!-- 选项 -->
+  <div class="options">
+    <label><input type="checkbox" id="optMd" checked> 保留Markdown为注释</label>
+    <label><input type="checkbox" id="optRaw" checked> 保留原始代码片段（raw cell）</label>
+    <label><input type="checkbox" id="optHeader"> 添加文件头信息</label>
+    <button class="btn" id="btnAll" disabled onclick="convertAll()">⚡ 全部转换下载</button>
+  </div>
+
+  <!-- 统计 -->
+  <div class="stats" id="stats" style="display:none">
+    <div class="stat-card"><div class="value" id="statFiles">0</div><div class="label">文件数</div></div>
+    <div class="stat-card"><div class="value" id="statCode">0</div><div class="label">代码行</div></div>
+    <div class="stat-card"><div class="value" id="statComment">0</div><div class="label">注释行</div></div>
+    <div class="stat-card"><div class="value" id="statSaved">0 B</div><div class="label">节省 token</div></div>
+  </div>
+
+  <!-- 文件列表 -->
+  <div class="file-list" id="fileList"></div>
+
+  <!-- 预览 -->
+  <div class="preview" id="preview" style="display:none">
+    <div class="head">
+      <span id="previewTitle">预览</span>
+      <button class="btn" style="font-size:.75rem;padding:.25rem .6rem" onclick="downloadSingle()">📥 下载 .py</button>
+    </div>
+    <pre id="previewContent" class="empty">点击文件列表中的文件名预览转换结果</pre>
+  </div>
+
+</div>
+
+<script>
+let filesData = {}; // {name: {raw, parsed, pyCode}}
+let previewTarget = null;
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const fileList = document.getElementById('fileList');
+const stats = document.getElementById('stats');
+const btnAll = document.getElementById('btnAll');
+const preview = document.getElementById('preview');
+const previewTitle = document.getElementById('previewTitle');
+const previewContent = document.getElementById('previewContent');
+
+// 主题
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('theme2', document.body.classList.contains('dark')?'dark':'light');
+}
+if(localStorage.getItem('theme2')==='dark') document.body.classList.add('dark');
+
+// 拖拽事件
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', () => { handleFiles(fileInput.files); fileInput.value = ''; });
+
+async function handleFiles(fileList){
+  for(const f of fileList){
+    if(!f.name.endsWith('.ipynb')) continue;
+    if(filesData[f.name]) continue; // 不重复
+    try{
+      const text = await f.text();
+      const nb = JSON.parse(text);
+      filesData[f.name] = {raw: nb, parsed: true, size: f.size};
+    }catch(e){
+      filesData[f.name] = {raw: null, parsed: false, error: e.message, size: f.size};
+    }
+  }
+  renderList();
+}
+
+function renderList(){
+  const names = Object.keys(filesData);
+  if(names.length === 0){
+    fileList.innerHTML = ''; stats.style.display = 'none';
+    btnAll.disabled = true; preview.style.display = 'none';
+    return;
+  }
+  btnAll.disabled = false;
+
+  let totalCode = 0, totalComment = 0, totalOrig = 0;
+  fileList.innerHTML = names.map(name => {
+    const d = filesData[name];
+    const py = d.parsed ? convert(d.raw) : null;
+    if(py){
+      d._py = py;
+      totalCode += py.codeLines;
+      totalComment += py.commentLines;
+      totalOrig += py.origSize;
+    }
+    return `<div class="file-item">
+      <span style="font-size:1.2rem">${d.parsed?'📗':'📕'}</span>
+      <span class="name" style="cursor:pointer" title="点击预览" onclick="previewFile('${name.replace(/'/g,"\\'")}')">${name}</span>
+      <span class="size">${fmtSize(d.size)}</span>
+      <span class="status ${d.parsed?'ok':'err'}">${d.parsed?`→ ${d._py?.codeLines||0}行`:'解析失败'}</span>
+      <span class="actions">
+        <button onclick="downloadOne('${name.replace(/'/g,"\\'")}')" ${d.parsed?'':'disabled'}>⬇ .py</button>
+        <button onclick="removeFile('${name.replace(/'/g,"\\'")}')">✕</button>
+      </span>
+    </div>`;
+  }).join('');
+
+  stats.style.display = 'flex';
+  document.getElementById('statFiles').textContent = names.length;
+  document.getElementById('statCode').textContent = totalCode;
+  document.getElementById('statComment').textContent = totalComment;
+  // token 估算：ipynb JSON 比纯 py 代码大约多 50-70% 的冗余（元数据、output等）
+  const saved = Math.max(0, totalOrig - (totalCode + totalComment) * 60);
+  document.getElementById('statSaved').textContent = fmtSize(saved);
+}
+
+function previewFile(name){
+  previewTarget = name;
+  const d = filesData[name];
+  if(!d || !d.parsed) return;
+  preview.style.display = 'block';
+  previewTitle.textContent = `预览: ${name}  →  ${name.replace('.ipynb','.py')}`;
+  previewContent.classList.remove('empty');
+  previewContent.textContent = d._py?.code || '(无代码内容)';
+}
+
+function removeFile(name){
+  if(previewTarget === name){ previewTarget = null; preview.style.display = 'none'; }
+  delete filesData[name];
+  renderList();
+}
+
+// ===== 核心转换逻辑 =====
+function convert(nb){
+  const cells = nb.cells || [];
+  const keepMd = document.getElementById('optMd').checked;
+  const keepRaw = document.getElementById('optRaw').checked;
+  const addHeader = document.getElementById('optHeader').checked;
+
+  let lines = [];
+  let codeLines = 0;
+  let commentLines = 0;
+
+  if(addHeader){
+    const meta = nb.metadata || {};
+    const kernelspec = meta.kernelspec || {};
+    lines.push(`# ============================================================`);
+    lines.push(`# 自动转换自 Jupyter Notebook`);
+    lines.push(`# 内核: ${kernelspec.display_name || '未知'}`);
+    lines.push(`# 语言: ${kernelspec.language || (meta.language_info?.name || '未知')}`);
+    lines.push(`# 单元格总数: ${cells.length}`);
+    lines.push(`# ============================================================`);
+    commentLines += 6;
+  }
+
+  for(let i = 0; i < cells.length; i++){
+    const cell = cells[i];
+    const ct = cell.cell_type;
+    const src = Array.isArray(cell.source) ? cell.source.join('') : (cell.source || '');
+
+    if(!src.trim()) continue;
+
+    if(ct === 'markdown' && keepMd){
+      // Markdown → Python 注释
+      const commentLines_block = src.split('\n').map(l => '# ' + l);
+      lines.push('');
+      lines.push('# ' + '-'.repeat(56));
+      lines.push('# [Markdown]');
+      lines.push(...commentLines_block);
+      lines.push('# ' + '-'.repeat(56));
+      commentLines += commentLines_block.length + 4;
+    }else if(ct === 'raw' && keepRaw){
+      lines.push('');
+      lines.push('# ' + '='.repeat(56));
+      lines.push('# [Raw Cell]');
+      lines.push(...src.split('\n').map(l => '# ' + l));
+      lines.push('# ' + '='.repeat(56));
+      commentLines += src.split('\n').length + 4;
+    }else if(ct === 'code'){
+      const source = src.trimEnd();
+      if(source){
+        lines.push('');
+        lines.push(`# --- Cell ${i+1} ---`);
+        lines.push(source);
+        commentLines += 1;
+        codeLines += source.split('\n').length;
+      }
+    }
+  }
+
+  const code = lines.join('\n').trim();
+  return {
+    code,
+    codeLines,
+    commentLines,
+    origSize: JSON.stringify(nb).length
+  };
+}
+
+// ===== 下载 =====
+function downloadOne(name){
+  const d = filesData[name];
+  if(!d || !d.parsed || !d._py) return;
+  const outName = name.replace(/\.ipynb$/i, '.py');
+  downloadBlob(d._py.code, outName);
+}
+
+function downloadSingle(){
+  if(!previewTarget) return;
+  downloadOne(previewTarget);
+}
+
+async function convertAll(){
+  const names = Object.keys(filesData);
+  if(names.length === 0) return;
+
+  if(names.length === 1){
+    downloadOne(names[0]);
+    return;
+  }
+
+  // 批量打包 ZIP
+  btnAll.textContent = '⏳ 打包中...'; btnAll.disabled = true;
+  const zip = new JSZip();
+  for(const name of names){
+    const d = filesData[name];
+    if(!d.parsed) continue;
+    if(!d._py) d._py = convert(d.raw);
+    zip.file(name.replace(/\.ipynb$/i, '.py'), d._py.code);
+  }
+  const blob = await zip.generateAsync({type:'blob'});
+  btnAll.textContent = '⚡ 全部转换下载'; btnAll.disabled = false;
+  downloadBlob(blob, 'converted_py_files.zip');
+}
+
+function downloadBlob(content, filename){
+  const url = URL.createObjectURL(new Blob([content], {type:'text/plain'}));
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function fmtSize(bytes){
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
+
+// 全局粘贴支持（Ctrl+V 粘贴 ipynb 文件）
+document.addEventListener('paste', e => {
+  const items = e.clipboardData?.items;
+  if(!items) return;
+  const files = [];
+  for(const item of items){
+    if(item.kind === 'file') files.push(item.getAsFile());
+  }
+  if(files.length > 0){ e.preventDefault(); handleFiles(files); }
+});
+</script>
+</body>
+</html>

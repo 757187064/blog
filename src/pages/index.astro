@@ -1,0 +1,128 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PostCard from "../components/PostCard.astro";
+import { resources } from "../data/resources";
+import { countRepositoryFiles, repositories } from "../lib/fileStore";
+import { getPublishedPosts } from "../lib/blog";
+
+const posts = await getPublishedPosts();
+const latestPosts = posts.slice(0, 3);
+const repositoryCards = repositories.map((repository) => ({
+  ...repository,
+  stats: countRepositoryFiles(repository)
+}));
+---
+
+<BaseLayout>
+  <section class="home-stage" data-home-stage>
+    <div class="stage-backgrounds" aria-hidden="true">
+      <div class="stage-bg is-active" data-bg="home"></div>
+      <div class="stage-bg" data-bg="articles"></div>
+      <div class="stage-bg" data-bg="files"></div>
+    </div>
+
+    <div class="stage-panels">
+      <article class="stage-panel glass-panel is-active" id="home" data-panel="home">
+        <p class="eyebrow">Student Blog</p>
+        <h1>把学习、生活和喜欢的事慢慢写下来。</h1>
+        <p class="hero-text">
+          这里是 Sakiko 的个人博客。会记录学习笔记、日常想法、兴趣收藏，以及一些成长过程中值得留下的片段。
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#articles" data-stage-link="articles">查看文章</a>
+          <a class="button button-secondary" href="#files" data-stage-link="files">项目文件</a>
+        </div>
+      </article>
+
+      <article class="stage-panel glass-panel article-panel" id="articles" data-panel="articles">
+        <p class="eyebrow">Latest Posts</p>
+        <h2>最近写下的内容</h2>
+        <p>新的文章会出现在这里，可能是学习总结，也可能只是某天的心情和发现。</p>
+        <div class="post-list">
+          {latestPosts.map((post) => <PostCard post={post} />)}
+        </div>
+        <div class="hero-actions">
+          <a class="button button-primary" href="/blog">进入文章页</a>
+          <a class="button button-secondary" href="#home" data-stage-link="home">回到首页</a>
+        </div>
+      </article>
+
+      <article class="stage-panel glass-panel files-panel" id="files" data-panel="files">
+        <p class="eyebrow">Project Files</p>
+        <h2>项目文件存储</h2>
+        <p>这里收纳课程笔记、练习项目和常用资源链接。文件页会用类似 GitHub 仓库的格式展示目录和文件。</p>
+
+        <div class="repository-grid">
+          {repositoryCards.map((repository) => (
+            <a class="repo-card" href={`/files/${repository.slug}/`}>
+              <span>{repository.category}</span>
+              <h3>{repository.title}</h3>
+              <p>{repository.description}</p>
+              <small>{repository.stats.directories} 个文件夹 / {repository.stats.files} 个文件</small>
+            </a>
+          ))}
+        </div>
+
+        <div class="resource-section">
+          <div class="resource-heading">
+            <p class="eyebrow">Resource Links</p>
+            <h3>资源链接</h3>
+          </div>
+          <div class="resource-grid">
+            {resources.map((resource) => (
+              <a class="resource-card" href={resource.href} target="_blank" rel="noreferrer">
+                <span>{resource.emoji}</span>
+                <strong>{resource.title}</strong>
+                <p>{resource.purpose}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <a class="button button-secondary" href="#home" data-stage-link="home">回到首页</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <script>
+    const stageLinks = document.querySelectorAll<HTMLAnchorElement>("[data-stage-link], .site-nav a[href^='/#']");
+    const panels = document.querySelectorAll<HTMLElement>("[data-panel]");
+    const backgrounds = document.querySelectorAll<HTMLElement>("[data-bg]");
+
+    const stageOrder = ["home", "articles", "files"];
+
+    function activateStage(stage: string) {
+      const nextStage = stageOrder.includes(stage) ? stage : "home";
+      const activeIndex = stageOrder.indexOf(nextStage);
+      panels.forEach((panel) => {
+        const panelStage = panel.getAttribute("data-panel") || "";
+        const panelIndex = stageOrder.indexOf(panelStage);
+        panel.classList.toggle("is-active", panelStage === nextStage);
+        panel.classList.toggle("is-before", panelIndex < activeIndex);
+        panel.classList.toggle("is-after", panelIndex > activeIndex);
+      });
+      backgrounds.forEach((background) => {
+        background.classList.toggle("is-active", background.getAttribute("data-bg") === nextStage);
+      });
+      document.querySelectorAll<HTMLAnchorElement>(".site-nav a").forEach((link) => {
+        const target = new URL(link.href).hash.replace("#", "") || "home";
+        link.classList.toggle("is-active", target === nextStage);
+      });
+      history.replaceState(null, "", `#${nextStage}`);
+    }
+
+    stageLinks.forEach((link) => {
+      link.addEventListener("click", (event) => {
+        const href = link.getAttribute("href") || "";
+        const stage = href.split("#")[1] || link.getAttribute("data-stage-link") || "home";
+        if (!stage || !document.querySelector(`[data-panel="${stage}"]`)) return;
+        event.preventDefault();
+        activateStage(stage);
+      });
+    });
+
+    activateStage(location.hash.replace("#", "") || "home");
+  </script>
+</BaseLayout>

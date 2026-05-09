@@ -1,0 +1,47 @@
+---
+import { site } from "../data/site";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = site.title,
+  description = site.description
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="/">{site.title}</a>
+        <nav class="site-nav" aria-label="主导航">
+          {site.nav.map((item) => (
+            <a href={item.href}>{item.label}</a>
+          ))}
+        </nav>
+      </header>
+      <main>
+        <slot />
+      </main>
+      <footer class="site-footer">
+        <p>{site.description}</p>
+        <div class="social-links">
+          {site.social.map((item) => (
+            <a href={item.href} target="_blank" rel="noreferrer">{item.label}</a>
+          ))}
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

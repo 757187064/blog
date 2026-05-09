@@ -1,0 +1,26 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  post: CollectionEntry<"blog">;
+}
+
+const { post } = Astro.props;
+
+const formattedDate = new Intl.DateTimeFormat("zh-CN", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit"
+}).format(post.data.pubDate);
+---
+
+<article class="post-card">
+  <p class="post-card-date">{formattedDate}</p>
+  <h2>
+    <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+  </h2>
+  <p>{post.data.description}</p>
+  <div class="tag-row">
+    {post.data.tags.map((tag) => <span>{tag}</span>)}
+  </div>
+</article>
