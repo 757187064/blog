@@ -11,6 +11,14 @@ const repositoryCards = repositories.map((repository) => ({
   ...repository,
   stats: countRepositoryFiles(repository)
 }));
+const externalProjects = [
+  {
+    title: "本地学术学习助手",
+    category: "在线工具",
+    description: "用于检索 GitHub 学习资源、论文、开放获取图像参考，并支持 BibTeX 导出。",
+    href: "https://academic-learning-assistant.vercel.app"
+  }
+];
 ---
 
 <BaseLayout>
@@ -53,6 +61,14 @@ const repositoryCards = repositories.map((repository) => ({
         <p>这里收纳课程笔记、练习项目和常用资源链接。文件页会用类似 GitHub 仓库的格式展示目录和文件。</p>
 
         <div class="repository-grid">
+          {externalProjects.map((project) => (
+            <a class="repo-card repo-card-external" href={project.href} target="_blank" rel="noreferrer">
+              <span>{project.category}</span>
+              <h3>{project.title}</h3>
+              <p>{project.description}</p>
+              <small>打开在线应用</small>
+            </a>
+          ))}
           {repositoryCards.map((repository) => (
             <a class="repo-card" href={`/files/${repository.slug}/`}>
               <span>{repository.category}</span>

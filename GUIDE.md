@@ -77,6 +77,7 @@ npm run build
 
 现在里面包含：
 
+- 在线工具入口：`本地学术学习助手`，跳转到独立部署的在线应用，不复制工具工程文件
 - 仓库卡片：课程笔记 `deeplearning`、练习项目 `battery`
 - 资源链接：从书签 HTML 整理出来的网站，带 emoji 和用途说明
 - 返回首页按钮
@@ -87,6 +88,14 @@ npm run build
 - `/files/battery/`：练习项目
 
 这两个页面会自动读取 [public/project-storage](/Users/sakiko/Public/blog/public/project-storage) 里的目录和文件，并显示成类似 GitHub 仓库的文件列表。
+
+在线工具入口当前指向：
+
+```text
+https://academic-learning-assistant.vercel.app
+```
+
+如果以后重新部署这个工具，只需要改 [src/pages/index.astro](/Users/sakiko/Public/blog/src/pages/index.astro) 里的 `externalProjects` 链接，不要把工具项目文件夹复制进博客。
 
 ---
 
