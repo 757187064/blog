@@ -790,11 +790,16 @@ li {
 
   .stage-bg {
     transform: none;
-    transition: opacity 360ms ease;
+    transition: none;
+    will-change: auto;
   }
 
   .stage-bg.is-active {
     transform: none;
+  }
+
+  .stage-bg:not(.is-active) {
+    display: none;
   }
 
   .stage-bg::after {
@@ -806,7 +811,15 @@ li {
   .post-card,
   .post-shell,
   .list-page {
-    backdrop-filter: blur(7px) saturate(112%);
+    background: rgba(242, 247, 244, 0.26);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .site-header,
+  .site-footer {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   .stage-bg[data-bg="home"] {
