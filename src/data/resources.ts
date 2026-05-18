@@ -142,5 +142,35 @@ export const resources = [
     title: "启航数学",
     href: "https://www.iqihang.com/ark/myCourse",
     purpose: "数学课程学习入口，用于查看课程和学习资料。"
+  },
+  {
+    emoji: "🎨",
+    title: "Cycani",
+    href: "https://www.cycani.org/",
+    purpose: "动画与视觉参考站点，适合寻找作品、风格和灵感资料。"
+  },
+  {
+    emoji: "🗺️",
+    title: "明日方舟地图",
+    href: "https://map.ark-nights.com/areas/",
+    purpose: "查看明日方舟关卡地图、区域信息和游戏资料。"
+  },
+  {
+    emoji: "🎮",
+    title: "FLiNG Trainer",
+    href: "https://flingtrainer.com/",
+    purpose: "游戏修改器和训练器索引，用于查找单机游戏辅助工具。"
+  },
+  {
+    emoji: "🐍",
+    title: "廖雪峰 Python 教程",
+    href: "https://liaoxuefeng.com/books/python/history/index.html",
+    purpose: "系统学习 Python 基础、进阶语法和编程实践。"
+  },
+  {
+    emoji: "📘",
+    title: "动手学深度学习 v2",
+    href: "https://zh-v2.d2l.ai/",
+    purpose: "深度学习中文教材新版，适合配合课程和代码练习使用。"
   }
 ];

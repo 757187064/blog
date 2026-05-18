@@ -17,7 +17,8 @@ const externalProjects = [
     title: "本地学术学习助手",
     category: "在线工具",
     description: "用于检索 GitHub 学习资源、论文、开放获取图像参考，并支持 BibTeX 导出。",
-    href: "https://academic-learning-assistant.vercel.app"
+    href: "https://academic-learning-assistant.vercel.app",
+    note: "请使用科学上网"
   }
 ];
 ---
@@ -54,7 +55,6 @@ const externalProjects = [
                 <p class="eyebrow">i write</p>
                 <h3 id="home-i-write">我写的文章</h3>
               </div>
-              <p>学习总结、生活记录，以及自己慢慢整理出来的想法。</p>
             </div>
             <div class="post-list">
               {iWritePosts.map((post) => <PostCard post={post} />)}
@@ -67,7 +67,7 @@ const externalProjects = [
                 <p class="eyebrow">i prefer</p>
                 <h3 id="home-i-prefer">我推荐的文章</h3>
               </div>
-              <p>只放推荐卡片并跳转原文，不复制外部文章内容。</p>
+              <p>如果打不开请科学上网。</p>
             </div>
             <div class="post-list">
               {iPreferPosts.map((post) => <PostCard post={post} />)}
@@ -92,6 +92,7 @@ const externalProjects = [
               <h3>{project.title}</h3>
               <p>{project.description}</p>
               <small>打开在线应用</small>
+              <small class="repo-card-note">{project.note}</small>
             </a>
           ))}
           {repositoryCards.map((repository) => (
@@ -133,8 +134,44 @@ const externalProjects = [
     const backgrounds = document.querySelectorAll<HTMLElement>("[data-bg]");
 
     const stageOrder = ["home", "articles", "files"];
+    const desktopBackgrounds = [
+      "/images/backgrounds/43281250_p0_master1200.jpg",
+      "/images/backgrounds/43650801_p0_master1200.jpg",
+      "/images/backgrounds/30757230_p0_master1200.jpg",
+      "/images/backgrounds/pc-hltv-yellow.jpg"
+    ];
+    const mobileBackgrounds = [
+      "/images/backgrounds/mobile-steel-ball-run.jpg",
+      "/images/backgrounds/mobile-festival-art.jpg",
+      "/images/backgrounds/mobile-red-character-stand.jpg",
+      "/images/backgrounds/mobile-red-character-thumb.jpg"
+    ];
+    const mobileQuery = window.matchMedia("(max-width: 900px)");
+    let activeBackgroundMode = "";
+
+    function shuffled(values: string[]) {
+      return [...values]
+        .map((value) => ({ value, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map((item) => item.value);
+    }
+
+    function assignStageBackgrounds() {
+      const mode = mobileQuery.matches ? "mobile" : "desktop";
+      if (mode === activeBackgroundMode) return;
+      activeBackgroundMode = mode;
+      const selectedImages = shuffled(mode === "mobile" ? mobileBackgrounds : desktopBackgrounds).slice(0, stageOrder.length);
+
+      backgrounds.forEach((background) => {
+        const stage = background.getAttribute("data-bg") || "home";
+        const index = Math.max(stageOrder.indexOf(stage), 0);
+        background.style.setProperty("--stage-bg-image", `url("${selectedImages[index]}")`);
+        background.dataset.backgroundMode = mode;
+      });
+    }
 
     function activateStage(stage: string) {
+      assignStageBackgrounds();
       const nextStage = stageOrder.includes(stage) ? stage : "home";
       const activeIndex = stageOrder.indexOf(nextStage);
       panels.forEach((panel) => {
@@ -164,6 +201,8 @@ const externalProjects = [
       });
     });
 
+    mobileQuery.addEventListener("change", assignStageBackgrounds);
+    assignStageBackgrounds();
     activateStage(location.hash.replace("#", "") || "home");
   </script>
 </BaseLayout>
