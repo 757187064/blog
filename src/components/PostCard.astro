@@ -12,12 +12,17 @@ const formattedDate = new Intl.DateTimeFormat("zh-CN", {
   month: "2-digit",
   day: "2-digit"
 }).format(post.data.pubDate);
+
+const href = post.data.externalUrl ?? `/blog/${post.id}/`;
+const externalAttrs = post.data.externalUrl
+  ? { target: "_blank", rel: "noreferrer" }
+  : {};
 ---
 
 <article class="post-card">
   <p class="post-card-date">{formattedDate}</p>
   <h2>
-    <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+    <a href={href} {...externalAttrs}>{post.data.title}</a>
   </h2>
   <p>{post.data.description}</p>
   <div class="tag-row">

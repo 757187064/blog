@@ -6,8 +6,8 @@
   --line: rgba(255, 255, 255, 0.58);
   --accent: #111111;
   --accent-soft: rgba(255, 255, 255, 0.42);
-  --card: rgba(242, 247, 244, 0.42);
-  --shadow: 0 24px 70px rgba(0, 0, 0, 0.18);
+  --card: rgba(242, 247, 244, 0.28);
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.16);
   --max-width: 1160px;
   --radius-lg: 22px;
   --radius-md: 16px;
@@ -150,8 +150,8 @@ h3 {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(238, 244, 238, 0.5), rgba(255, 255, 255, 0.08)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(0, 0, 0, 0.18));
+    linear-gradient(90deg, rgba(238, 244, 238, 0.28), rgba(255, 255, 255, 0.03)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.14));
 }
 
 .stage-bg.is-active {
@@ -222,7 +222,7 @@ h3 {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--card);
-  backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(130%);
   box-shadow: var(--shadow);
 }
 
@@ -338,6 +338,30 @@ li {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.article-sections {
+  display: grid;
+  gap: 2rem;
+}
+
+.article-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.article-section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.42);
+  padding-bottom: 0.65rem;
+}
+
+.article-section-heading h2,
+.article-section-heading p {
+  margin: 0;
 }
 
 .feature-grid article,
@@ -523,8 +547,8 @@ li {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(238, 244, 238, 0.52), rgba(255, 255, 255, 0.12)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(0, 0, 0, 0.28));
+    linear-gradient(90deg, rgba(238, 244, 238, 0.32), rgba(255, 255, 255, 0.05)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.2));
 }
 
 .post-shell {

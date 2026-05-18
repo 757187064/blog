@@ -4,6 +4,8 @@ import PostCard from "../../components/PostCard.astro";
 import { getPublishedPosts } from "../../lib/blog";
 
 const posts = await getPublishedPosts();
+const iWritePosts = posts.filter((post) => post.data.section === "i write");
+const iPreferPosts = posts.filter((post) => post.data.section === "i prefer");
 ---
 
 <BaseLayout title="文章 | 博客" description="博客文章列表">
@@ -15,8 +17,26 @@ const posts = await getPublishedPosts();
         <h1>文章</h1>
         <p>这里是所有已经发布的内容，主要记录学习、生活和兴趣里的小发现。</p>
       </div>
-      <div class="post-list">
-        {posts.map((post) => <PostCard post={post} />)}
+      <div class="article-sections">
+        <section class="article-section" aria-labelledby="i-write">
+          <div class="article-section-heading">
+            <p class="eyebrow">Original Notes</p>
+            <h2 id="i-write">i write</h2>
+          </div>
+          <div class="post-list">
+            {iWritePosts.map((post) => <PostCard post={post} />)}
+          </div>
+        </section>
+
+        <section class="article-section" aria-labelledby="i-prefer">
+          <div class="article-section-heading">
+            <p class="eyebrow">Preferred Reading</p>
+            <h2 id="i-prefer">i prefer</h2>
+          </div>
+          <div class="post-list">
+            {iPreferPosts.map((post) => <PostCard post={post} />)}
+          </div>
+        </section>
       </div>
     </div>
   </section>

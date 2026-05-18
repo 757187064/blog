@@ -78,16 +78,17 @@ npm run build
 现在里面包含：
 
 - 在线工具入口：`本地学术学习助手`，跳转到独立部署的在线应用，不复制工具工程文件
-- 仓库卡片：课程笔记 `deeplearning`、练习项目 `battery`
+- 仓库卡片：课程笔记 `deeplearning`
 - 资源链接：从书签 HTML 整理出来的网站，带 emoji 和用途说明
 - 返回首页按钮
 
 当前文件仓库页面：
 
 - `/files/deeplearning/`：课程笔记
-- `/files/battery/`：练习项目
 
-这两个页面会自动读取 [public/project-storage](/Users/sakiko/Public/blog/public/project-storage) 里的目录和文件，并显示成类似 GitHub 仓库的文件列表。
+文件仓库页面会自动读取 [public/project-storage](/Users/sakiko/Public/blog/public/project-storage) 里的目录和文件，并显示成类似 GitHub 仓库的文件列表。
+
+注意：公开博客目录里不要放论文编写、未公开项目、token、API key 或其他不适合公开展示的资料。本地备份可以继续放在博客目录外，但不要复制到 `public/project-storage/`。
 
 在线工具入口当前指向：
 
@@ -96,6 +97,46 @@ https://academic-learning-assistant.vercel.app
 ```
 
 如果以后重新部署这个工具，只需要改 [src/pages/index.astro](/Users/sakiko/Public/blog/src/pages/index.astro) 里的 `externalProjects` 链接，不要把工具项目文件夹复制进博客。
+
+---
+
+## 如果你想更新文章分区
+
+文章都放在 [src/content/blog](/Users/sakiko/Public/blog/src/content/blog)。
+
+当前文章页有两个分区：
+
+- `i write`：你自己写的站内文章，会生成博客详情页
+- `i prefer`：你推荐的外部阅读，只显示卡片并跳转到原网站，不复制原文
+
+站内文章示例：
+
+```md
+---
+title: "一篇新的学习笔记"
+description: "这篇文章记录我最近学到的东西。"
+pubDate: 2026-05-18
+section: "i write"
+tags: ["Learning"]
+---
+
+正文写在这里。
+```
+
+外部推荐示例：
+
+```md
+---
+title: "The AI Revolution"
+description: "一篇值得反复阅读的 AI 长文。"
+pubDate: 2026-05-18
+section: "i prefer"
+externalUrl: "https://waitbutwhy.com/2015/01/artificial-intelligence-revolution-1.html"
+tags: ["AI", "Essay"]
+---
+
+这只是推荐卡片说明，不复制原文。
+```
 
 ---
 

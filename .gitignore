@@ -2,5 +2,6 @@ node_modules/
 dist/
 .astro/
 .vercel/
+public/project-storage/battery/
 .DS_Store
 npm-debug.log*

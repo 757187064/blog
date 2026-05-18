@@ -25,13 +25,6 @@ export const repositories: RepositoryMeta[] = [
     category: "课程笔记",
     description: "深度学习课程资料、阅读材料、课件、作业和 notebook。",
     root: "deeplearning"
-  },
-  {
-    slug: "battery",
-    title: "电池项目",
-    category: "练习项目",
-    description: "电池实验数据、论文资料、计划文档、图像和阶段性项目文件。",
-    root: "battery"
   }
 ];
 
