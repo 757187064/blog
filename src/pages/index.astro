@@ -6,7 +6,8 @@ import { countRepositoryFiles, repositories } from "../lib/fileStore";
 import { getPublishedPosts } from "../lib/blog";
 
 const posts = await getPublishedPosts();
-const latestPosts = posts.slice(0, 3);
+const iWritePosts = posts.filter((post) => post.data.section === "i write").slice(0, 3);
+const iPreferPosts = posts.filter((post) => post.data.section === "i prefer").slice(0, 3);
 const repositoryCards = repositories.map((repository) => ({
   ...repository,
   stats: countRepositoryFiles(repository)
@@ -45,9 +46,33 @@ const externalProjects = [
       <article class="stage-panel glass-panel article-panel" id="articles" data-panel="articles">
         <p class="eyebrow">Latest Posts</p>
         <h2>最近写下的内容</h2>
-        <p>新的文章会出现在这里，可能是学习总结，也可能只是某天的心情和发现。</p>
-        <div class="post-list">
-          {latestPosts.map((post) => <PostCard post={post} />)}
+        <p>这里会分开收纳我自己写的内容，以及我觉得值得反复阅读的外部文章。</p>
+        <div class="home-article-sections">
+          <section class="home-article-group" aria-labelledby="home-i-write">
+            <div class="home-article-heading">
+              <div>
+                <p class="eyebrow">i write</p>
+                <h3 id="home-i-write">我写的文章</h3>
+              </div>
+              <p>学习总结、生活记录，以及自己慢慢整理出来的想法。</p>
+            </div>
+            <div class="post-list">
+              {iWritePosts.map((post) => <PostCard post={post} />)}
+            </div>
+          </section>
+
+          <section class="home-article-group" aria-labelledby="home-i-prefer">
+            <div class="home-article-heading">
+              <div>
+                <p class="eyebrow">i prefer</p>
+                <h3 id="home-i-prefer">我推荐的文章</h3>
+              </div>
+              <p>只放推荐卡片并跳转原文，不复制外部文章内容。</p>
+            </div>
+            <div class="post-list">
+              {iPreferPosts.map((post) => <PostCard post={post} />)}
+            </div>
+          </section>
         </div>
         <div class="hero-actions">
           <a class="button button-primary" href="/blog">进入文章页</a>
